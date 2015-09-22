@@ -1,0 +1,180 @@
+1	Node File read and write howto
+1.1	Version 1
+Fájl olvasás és kiírás a konzolra
+
+--------------------------------------------------------------------------------
+var fs = require('fs');
+
+fs.readFile(__filename, {encoding: 'utf8'}, gotFileContents);
+
+function gotFileContents(err, result) {
+  if(err) {
+    return console.error(err);
+  }
+
+  console.log(result);
+}
+--------------------------------------------------------------------------------
+
+1.2	Version 2
+Fájl olvasás és kiírás fájlba
+
+--------------------------------------------------------------------------------
+var fs = require('fs');
+var path = require('path');
+
+var dir = path.join(__dirname, 'temp');
+var source = __filename;
+var target = path.join(dir, 'target.js');
+
+fs.mkdir(dir, function(err, result) {
+  if(err) {
+    return handleError(err);
+  }
+
+  fs.readFile(source, {encoding: 'utf8'}, function(err, result) {
+    if(err) {
+      return handleError(err);
+    }
+
+    fs.writeFile(target, result, function(err, result) {
+      if(err) {
+        return handleError(err);
+      }
+      console.log("All done.");
+    })
+  });
+});
+
+function handleError(err) {
+  console.error(err);
+};
+-------------------------------------------------------------------------------- 
+ 
+1.3	Version 3
+Függvények kiemelése, error kezelõvel
+
+--------------------------------------------------------------------------------
+var fs = require('fs');
+var path = require('path');
+
+var dir = path.join(__dirname, 'temp');
+var source = __filename;
+var target = path.join(dir, 'target.js');
+
+fs.mkdir(dir, handlingError(folderCreated));
+
+function folderCreated(result) {
+  fs.readFile(source, {encoding: 'utf8'}, handlingError(fileOpened));
+}
+
+function fileOpened(result) {
+  fs.writeFile(target, result, handlingError(fileWritten))
+}
+
+function fileWritten(result) {
+  console.log("All done.");
+}
+
+function handlingError(callback) {
+  return function(err, result) {
+    if(err) {
+      return handleError(err);
+    }
+    callback(result);
+  }
+}
+
+function handleError(err) {
+  console.error(err);
+};
+--------------------------------------------------------------------------------
+
+1.4	Version 4
+Promise megoldás
+
+--------------------------------------------------------------------------------
+var fs = require('fs');
+var path = require('path');
+var Promise = require('promise');
+
+var dir = path.join(__dirname, 'temp');
+var source = __filename;
+var target = path.join(dir, 'target.js');
+
+createFolder(dir)
+  .then(openFile)
+  .then(writeFile)
+  .then(function() {
+    console.log('All done');
+  })
+  .catch(handleError);
+
+function createFolder(dirName) {
+  return new Promise(function(resolve, reject) {
+    fs.mkdir(dirName, handlingError(resolve, reject));
+  });
+}
+
+function openFile() {
+  return new Promise(function(resolve, reject) {
+    fs.readFile(source, {encoding: 'utf8'}, handlingError(resolve, reject));
+  });
+}
+
+function writeFile(content) {
+  return new Promise(function(resolve, reject) {
+    fs.writeFile(target, content, handlingError(resolve, reject))
+  });
+}
+
+function handlingError(resolve, reject) {
+  return function(err, result) {
+    if(err) {
+      return reject(err);
+    }
+    resolve(result);
+  }
+}
+
+function handleError(err) {
+  console.error(err);
+};
+--------------------------------------------------------------------------------
+
+1.5	Version 5
+Denodify-os megoldás
+
+--------------------------------------------------------------------------------
+var fs = require('fs');
+var path = require('path');
+var Promise = require('promise');
+
+var dir = path.join(__dirname, 'temp');
+var source = __filename;
+var target = path.join(dir, 'target.js');
+
+var fs_mkdir = Promise.denodeify(fs.mkdir);
+var fs_readFile = Promise.denodeify(fs.readFile);
+var fs_writeFile = Promise.denodeify(fs.writeFile);
+
+fs_mkdir(dir)
+  .then(openFile)
+  .then(writeFile)
+  .then(function() {
+    console.log('All done');
+  })
+  .catch(handleError);
+
+function openFile() {
+  return fs_readFile(source, {encoding: 'utf8'});
+}
+
+function writeFile(content) {
+  return fs_writeFile(target, content);
+}
+
+function handleError(err) {
+  console.error(err);
+};
+

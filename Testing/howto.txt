@@ -1,0 +1,43 @@
+3	Testing
+3.1.1	Projekt inicializálás
+	1.	npm init
+	2.	npm install -g mocha
+	3.	npm install chai –save-dev
+	4.	Amit tesztelni fogunk, tags.js
+		a.	Snippet bemásolás
+3.2	Egyszerű teszt írás
+1.	tags.spec.js létrehozás
+--------------------------------------------------------------------------------
+  describe("#parse()", function() {
+    it("should parse long formed tags", function(){
+      var args = ["--depth=4", "--hello=world"];
+      var results = tags.parse(args);
+      expect(results).to.have.property("depth", 4);
+      expect(results).to.have.property("hello", "world");
+    });
+  });
+--------------------------------------------------------------------------------
+3.3	Lehesssen megadni default értéket
+1.	Először írjuk meg az új tesztet
+--------------------------------------------------------------------------------
+    it("should fallback to defaults", function(){
+      var defaults = { depth: 2, foo: "bar" };
+      var results = tags.parse(args, defaults);
+
+      var expected = {
+        depth: 4,
+        foo: "bar",
+        hello: "world"
+      };
+
+      expect(results).to.deep.equal(expected);
+    });
+--------------------------------------------------------------------------------
+2.	Futtassuk, el fog failelni
+3.	Javítsuk ki a tags.js-t
+--------------------------------------------------------------------------------
+exports.parse = function(args, defaults) {
+  var options = {};
+  if (typeof defaults === "object" && !(defaults instanceof Array)) {
+    options = defaults
+

@@ -1,0 +1,100 @@
+2	Stream howto
+2.1	Első lépés
+	1.	Projekt base letöltése: 
+	2.	CMD elindítása, mappa megnyitás
+	3.	Adatforrás generálás
+	a.	cd data-source
+	b.	node create-source.js
+	4.	Lib mappa átnézése
+	
+2.2	Read stream
+--------------------------------------------------------------------------------
+
+2.2.1	Version 1
+
+--------------------------------------------------------------------------------
+var ReadStream = require('./lib/readStream.js');
+var stream = new ReadStream();
+stream.on('readable', function() {
+  while (null !== (record = stream.read())) {
+    console.log('received: ' + JSON.stringify(record));
+  }
+});
+stream.on('end', function() {
+  console.log('done');
+});
+--------------------------------------------------------------------------------
+
+2.2.2	Version 2
+
+--------------------------------------------------------------------------------
+var ReadStream = require('./lib/readStream.js');
+var stream = new ReadStream();
+stream.on('data', function(record) {
+  console.log('received: ' + JSON.stringify(record));
+});
+stream.on('end', function() {
+  console.log('done');
+});
+--------------------------------------------------------------------------------
+
+2.2.3	Version 3
+
+--------------------------------------------------------------------------------
+var ReadStream = require('./lib/readStream.js');
+var stream = new ReadStream();
+stream.on('data', function(record) {
+  console.log('received: ' + JSON.stringify(record));
+  console.log('pausing stream for 2 seconds');
+  stream.pause();
+  setTimeout(function() {
+    console.log('resuming stream');
+    stream.resume();
+  },2000);
+});
+stream.on('end', function() {
+  console.log('done');
+});
+--------------------------------------------------------------------------------
+
+2.3	Write stream
+	Nézzük meg mit csinált a writeStream
+2.3.1	Version 1
+
+--------------------------------------------------------------------------------
+var ReadStream = require('./lib/readStream.js'),
+  WriteStream = require('./lib/writeStream.js');
+
+var rs = new ReadStream();
+var ws = new WriteStream();
+
+rs.pipe(ws);
+--------------------------------------------------------------------------------
+
+2.3.2	Version 2
+	Nézzük meg mit csinál a writeStream 2
+	
+--------------------------------------------------------------------------------
+var ReadStream = require('./lib/readStream.js'),
+  WriteStream = require('./lib/writeStream_v2.js');
+
+var rs = new ReadStream();
+var ws = new WriteStream();
+
+rs.pipe(ws);
+--------------------------------------------------------------------------------
+
+2.4	Transform stream
+Nézzük meg mit csinál a transformStream
+
+--------------------------------------------------------------------------------
+var ReadStream = require('./lib/readStream.js'),
+  WriteStream = require('./lib/writeStream.js'),
+  TransformStream = require('./lib/transformStream.js');
+
+var rs = new ReadStream();
+var ws = new WriteStream();
+var ts = new TransformStream();
+
+rs.pipe(ts).pipe(ws);
+
